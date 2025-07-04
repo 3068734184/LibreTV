@@ -48,7 +48,7 @@ function saveUserTags() {
     }
 }
 
-let doubanMovieTvCurrentSwitch = 'movie';
+let doubanMovieTvCurrentSwitch = 'tv';
 let doubanCurrentTag = '热门';
 let doubanPageStart = 0;
 const doubanPageSize = 16; // 一次显示的项目数量
@@ -94,17 +94,11 @@ function initDouban() {
         window.scrollTo(0, 0);
     }
 
-    // 加载用户标签
+    // 首先加载用户标签
     loadUserTags();
 
     // 渲染电影/电视剧切换
     renderDoubanMovieTvSwitch();
-    
-    // 渲染豆瓣标签
-    renderDoubanTags();
-    
-    // 换一批按钮事件监听
-    setupDoubanRefreshBtn();
     
     // 初始加载热门内容
     if (localStorage.getItem('doubanEnabled') === 'true') {
@@ -263,6 +257,33 @@ function renderDoubanMovieTvSwitch() {
 
     if (!movieToggle ||!tvToggle) return;
 
+    // 初始化时根据当前开关状态设置按钮样式
+    if (doubanMovieTvCurrentSwitch === 'tv') {
+        tvToggle.classList.add('bg-pink-600', 'text-white');
+        tvToggle.classList.remove('text-gray-300');
+        
+        movieToggle.classList.remove('bg-pink-600', 'text-white');
+        movieToggle.classList.add('text-gray-300');
+        
+        // 确保加载电视剧标签
+        renderDoubanTags(tvTags);
+        
+        // 设置换一批按钮
+        setupDoubanRefreshBtn();
+    } else {
+        movieToggle.classList.add('bg-pink-600', 'text-white');
+        movieToggle.classList.remove('text-gray-300');
+        
+        tvToggle.classList.remove('bg-pink-600', 'text-white');
+        tvToggle.classList.add('text-gray-300');
+        
+        // 确保加载电影标签
+        renderDoubanTags(movieTags);
+        
+        // 设置换一批按钮
+        setupDoubanRefreshBtn();
+    }
+
     movieToggle.addEventListener('click', function() {
         if (doubanMovieTvCurrentSwitch !== 'movie') {
             // 更新按钮样式
@@ -321,7 +342,8 @@ function renderDoubanTags(tags) {
     if (!tagContainer) return;
     
     // 确定当前应该使用的标签列表
-    const currentTags = doubanMovieTvCurrentSwitch === 'movie' ? movieTags : tvTags;
+    // 如果传入了tags参数则使用，否则根据当前选择决定
+    const currentTags = tags || (doubanMovieTvCurrentSwitch === 'movie' ? movieTags : tvTags);
     
     // 清空标签容器
     tagContainer.innerHTML = '';
